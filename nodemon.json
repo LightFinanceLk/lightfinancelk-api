@@ -1,0 +1,11 @@
+{
+  "env": {
+    "JWT_SECRET": "K8T157gopd0*",
+    "AWS_ACCESS_KEY_ID": "AKIARXOPDIICVFQLEHUW",
+    "AWS_SECRET_KEY": "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",
+    "AWS_FROM_EMAIL": "sajith@lightfinancelk.com",
+    "AWS_REGION": "us-east-1",
+    "MONGO_DB_UN": "LightFinanceLK",
+    "MONGO_DB_PW": "lB22FVXymyh4rHM0"
+  }
+}
