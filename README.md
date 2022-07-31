@@ -1,1 +1,1 @@
-# lightfinancelk-api
+# Light Finance LK API
