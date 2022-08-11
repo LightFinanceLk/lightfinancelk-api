@@ -16,11 +16,28 @@ const awsConfig = {
 
 const SES = new AWS.SES(awsConfig);
 
-const sendEmail = async (toEmail, password) => {
+const sendEmail = async (toEmail, password, type) => {
   const fromEmail = `${config.email.FROM_EMAIL}`;
   const tempPassword = password ? password : nanoid(8).toUpperCase();
 
-  console.log(tempPassword);
+  let html = "",
+    subject = "Your verification code";
+
+  if (type === "new") {
+    html = `<p> Hello! <br/><br/>
+    Welcome to Light Finance Lk. Please use the following temporary password to login to your account.<br/><br/>
+    Your temporary password is <strong>${tempPassword}</strong></p>`;
+  } else if (type === "reset") {
+    html = `<p> Hello! <br/><br/>
+    There is a request to change your password. If you are not interested in resetting your password please ignore this email.<br/>
+    Please use the following temporary password to login to your account. <br/><br/>
+    Your temporary password is <strong>${tempPassword}</strong></p>`;
+  } else if (type === "init") {
+    html = `<p> Hello! <br/><br/>
+    Your password is updated successfully. Please login again.</p>`;
+    subject = "Password is updated";
+  }
+
   try {
     const params = {
       Source: fromEmail,
@@ -31,12 +48,12 @@ const sendEmail = async (toEmail, password) => {
       Message: {
         Subject: {
           Charset: "UTF-8",
-          Data: "Your verification code",
+          Data: subject,
         },
         Body: {
           Html: {
             Charset: "UTF-8",
-            Data: `<h1>Your temporary password is ${tempPassword}</h2>`,
+            Data: html,
           },
         },
       },

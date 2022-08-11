@@ -2,43 +2,34 @@ const express = require("express");
 const { check } = require("express-validator");
 
 const usersController = require("../controllers/users-controller");
-const checkAuth = require("../middleware/check-auth");
+// const fileUpload = require('../middleware/file-upload');
 
 const router = express.Router();
 
-router.use(checkAuth);
-
-router.get("/:uid", usersController.getUserById);
-
-router.patch(
-  "/:uid",
+router.post(
+  "/signup",
+  // fileUpload.single("image"),
   [
     check("firstName").not().isEmpty(),
     check("lastName").not().isEmpty(),
     check("dob").not().isEmpty(),
+    check("email").normalizeEmail().isEmail(),
     check("gender").not().isEmpty(),
     check("maritalStatus").not().isEmpty(),
     check("occupation").not().isEmpty(),
     check("phone").not().isEmpty(),
+    check("initPassword").not().isEmpty(),
   ],
-  usersController.updateUserById
+  usersController.signup
 );
-
-router.delete("/:uid", usersController.deleteUserById);
 
 router.post(
-  "/resetPassword",
-  [check("email").not().isEmpty()],
-  usersController.resetPassword
-);
-
-router.patch(
-  "/updatePassword/:uid",
+  "/login",
   [
-    check("currentPassword").not().isEmpty(),
-    check("newPassword").not().isEmpty(),
+    check("email").not().isEmpty(),
+    check("password").isLength({ min: 6 }).not().isEmpty(),
   ],
-  usersController.updatePasswordByUserId
+  usersController.login
 );
 
 module.exports = router;

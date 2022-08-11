@@ -13,6 +13,7 @@ const userSchema = new Schema({
   gender: { type: String, required: true },
   maritalStatus: { type: String, required: true },
   occupation: { type: String, required: true },
+  initPassword: { type: Boolean, required: true },
   // image: { type: String, required: true },
   // places: [{ type: mongoose.Types.ObjectId, required: true, ref: 'Place'}]
 });
