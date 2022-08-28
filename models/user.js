@@ -14,6 +14,8 @@ const userSchema = new Schema({
   maritalStatus: { type: String, required: true },
   occupation: { type: String, required: true },
   initPassword: { type: Boolean, required: true },
+  role: { type: String, required: true },
+  city: { type: String, required: true },
   // image: { type: String, required: true },
   // places: [{ type: mongoose.Types.ObjectId, required: true, ref: 'Place'}]
 });

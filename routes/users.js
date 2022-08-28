@@ -10,6 +10,10 @@ router.use(checkAuth);
 
 router.get("/:uid", usersController.getUserById);
 
+router.get("/role/:rid", usersController.getUsersByUserRole);
+
+router.get("/:uid/accounts", usersController.getAccountsByUserId);
+
 router.patch(
   "/:uid",
   [

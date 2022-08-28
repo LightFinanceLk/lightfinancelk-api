@@ -78,7 +78,8 @@ const User = require("../models/user");
 //   });
 // };
 
-const createRecord = async (req, res, next) => {
+const createBulkRecord = async (req, res, next) => {
+  console.log("awa");
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return next(
@@ -86,68 +87,37 @@ const createRecord = async (req, res, next) => {
     );
   }
 
-  const {
-    recordType,
-    accountId,
-    amount,
-    category,
-    subCategory,
-    date,
-    description,
-    // payee,
-    // note,
-    // paymentType,
-    // paymentStatus,
-    // place,
-  } = req.body;
+  const records = req.body;
 
-  const createdRecord = new Record({
-    recordType,
-    accountId,
-    amount,
-    category,
-    subCategory,
-    date,
-    // payee,
-    // note,
-    // paymentType,
-    // paymentStatus,
-    // place,
+  const recordsArr = records.map((record) => {
+    return {
+      amount: record.Amount,
+      date: record.Date,
+      description: record.Description,
+    };
   });
 
-  // let user;
-  // try {
-  //   user = await User.findById(creator);
-  // } catch (err) {
-  //   const error = new HttpError("Creating record failed, please try again", 500);
-  //   return next(error);
-  // }
+  console.log(recordsArr);
 
-  // if (!user) {
-  //   const error = new HttpError("Could not find user for provided id", 404);
-  //   return next(error);
-  // }
-
-  // console.log(user);
+  // const createdRecord = new Record({
+  //   amount,
+  //   date,
+  //   description,
+  // });
 
   try {
-    console.log(recordType, accountId, amount, category, subCategory, date);
-    // const sess = await mongoose.startSession();
-    // sess.startTransaction();
-    // await createdRecord.save({ session: sess });
-    await createdRecord.save();
-    // user.records.push(createdRecord);
-    // await user.save({ session: sess });
-    // await sess.commitTransaction();
+    console.log(records);
+    await Record.insertMany(recordsArr, (error) => {
+      console.log(error);
+    });
   } catch (err) {
     const error = new HttpError(
-      "Creating record failed, please try again.",
+      "Creating records failed, please try again.",
       500
     );
     return next(error);
   }
 
-  // res.status(201).json({ record: createdRecord });
   res.status(201).json({});
 };
 
@@ -247,6 +217,7 @@ const createRecord = async (req, res, next) => {
 
 // exports.getRecordById = getRecordById;
 // exports.getRecordsByAccountId = getRecordsByAccountId;
-exports.createRecord = createRecord;
+// exports.createRecord = createRecord;
+exports.createBulkRecord = createBulkRecord;
 // exports.updateRecord = updateRecord;
 // exports.deleteRecord = deleteRecord;

@@ -7,6 +7,7 @@ const authRoutes = require("./routes/auth");
 const usersRoutes = require("./routes/users");
 const accountRoutes = require("./routes/accounts");
 const recordRoutes = require("./routes/records");
+const bulkRecordRoutes = require("./routes/bulk-records");
 const config = require("./config");
 
 const app = express();
@@ -35,6 +36,7 @@ app.use("/api/users", usersRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/accounts", accountRoutes);
 app.use("/api/records", recordRoutes);
+app.use("/api/bulk-records", bulkRecordRoutes);
 
 mongoose
   .connect(

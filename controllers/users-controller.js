@@ -7,6 +7,7 @@ const { sendEmail } = require("../utils/sendEmail");
 
 const HttpError = require("../models/http-error");
 const User = require("../models/user");
+const Account = require("../models/account");
 
 // const getUsers = async (req, res, next) => {
 //   let users;
@@ -40,6 +41,75 @@ const getUserById = async (req, res, next) => {
   }
   // delete user[password];
   res.json({ user });
+};
+
+const getUsersByUserRole = async (req, res, next) => {
+  let users = null,
+    role = req.params.rid;
+  if (role === "1974") {
+    try {
+      users = await User.find({ role });
+    } catch (err) {
+      const error = new HttpError(
+        "Fetching users failed, please try again later.",
+        500
+      );
+      return next(error);
+    }
+    if (users) {
+      users = users.map((user) => {
+        return {
+          city: user.city,
+          dob: user.dob,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          maritalStatus: user.maritalStatus,
+          phone: user.phone,
+          id: user.id,
+        };
+      });
+    }
+  } else if (role === "2022") {
+    try {
+      users = await User.find({ role });
+    } catch (err) {
+      const error = new HttpError(
+        "Fetching users failed, please try again later.",
+        500
+      );
+      return next(error);
+    }
+    if (users) {
+      users = users.map((user) => {
+        return {
+          city: user.city,
+          dob: user.dob,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          maritalStatus: user.maritalStatus,
+          phone: user.phone,
+          id: user.id,
+          gender: user.gender,
+        };
+      });
+    }
+  }
+  res.json({ users });
+};
+
+const getAccountsByUserId = async (req, res, next) => {
+  console.log(req.params.uid, "uid");
+  try {
+    userAccount = await Account.find({ userId: req.params.uid });
+  } catch (err) {
+    const error = new HttpError(
+      "Fetching user accounts failed, please try again later.",
+      500
+    );
+    return next(error);
+  }
+  // delete user[password];
+  res.json({ userAccount });
 };
 
 const updatePasswordByUserId = async (req, res, next) => {
@@ -169,7 +239,7 @@ const updateUserById = async (req, res, next) => {
 
 const deleteUserById = async (req, res, next) => {
   const uId = req.params.uid;
-
+  // delete user's accounts and records
   let existingUser;
   try {
     existingUser = await User.findByIdAndDelete(uId);
@@ -188,10 +258,7 @@ const signup = async (req, res, next) => {
   const errors = validationResult(req);
   const tempPassword = nanoid(8).toUpperCase();
 
-  let displayErrors = "";
-
   if (!errors.isEmpty()) {
-    displayErrors += "Invalid inputs passed, please check your data.";
     return next(
       new HttpError("Invalid inputs passed, please check your data.", 422)
     );
@@ -207,7 +274,10 @@ const signup = async (req, res, next) => {
     maritalStatus,
     occupation,
     initPassword,
+    city,
+    role,
   } = req.body;
+
   let existingUser;
 
   try {
@@ -227,7 +297,9 @@ const signup = async (req, res, next) => {
     //   "User exists already, please login instead.",
     //   422
     // );
-    const error = new Error("User exists already, please login instead.");
+    const error = new Error(
+      "User exists for the given email address, please login instead."
+    );
     error.http_code = 422;
     return next(error);
   }
@@ -255,6 +327,8 @@ const signup = async (req, res, next) => {
     initPassword,
     // image: req.file.path,
     password: hashedPassword,
+    role,
+    city,
   });
 
   try {
@@ -316,6 +390,7 @@ const login = async (req, res, next) => {
         userId: existingUser.id,
         email: existingUser.email,
         initPassword: existingUser.initPassword,
+        role: existingUser.role,
       },
       `${config.jwt.SECRET}`,
       { expiresIn: "1h" }
@@ -377,6 +452,8 @@ const resetPassword = async (req, res, next) => {
 
 // exports.getUsers = getUsers;
 exports.getUserById = getUserById;
+exports.getUsersByUserRole = getUsersByUserRole;
+exports.getAccountsByUserId = getAccountsByUserId;
 exports.signup = signup;
 exports.login = login;
 exports.resetPassword = resetPassword;

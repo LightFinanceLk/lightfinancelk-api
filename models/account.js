@@ -7,6 +7,7 @@ const accountSchema = new Schema({
   accountColor: { type: String, required: true },
   accountType: { type: String, required: true },
   currency: { type: String, required: true },
+  amount: { type: Number, required: true },
   userId: { type: String, required: true },
 });
 
