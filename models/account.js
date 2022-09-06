@@ -9,6 +9,11 @@ const accountSchema = new Schema({
   currency: { type: String, required: true },
   amount: { type: Number, required: true },
   userId: { type: String, required: true },
+  bulkRecordIds: [
+    {
+      type: String,
+    },
+  ],
 });
 
 module.exports = mongoose.model("Account", accountSchema);

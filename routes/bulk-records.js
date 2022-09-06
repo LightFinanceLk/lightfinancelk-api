@@ -8,12 +8,12 @@ const router = express.Router();
 
 router.use(checkAuth);
 
-// router.get("/:rid", recordsControllers.getRecordById);
+router.get("/:aid", bulkRecordsControllers.getBulkRecordsByAccountId);
 
 // router.get("/account/:rid", recordsControllers.getRecordsByAccountId);
 
 router.post(
-  "/",
+  "/:aid",
   // [check("records").notEmpty()],
   bulkRecordsControllers.createBulkRecord
 );
@@ -30,6 +30,6 @@ router.post(
 //   recordsControllers.updateRecord
 // );
 
-// router.delete("/:rid", recordsControllers.deleteRecord);
+router.delete("/:rid", bulkRecordsControllers.deleteBulkRecord);
 
 module.exports = router;

@@ -8,7 +8,7 @@ const router = express.Router();
 
 router.use(checkAuth);
 
-// router.get("/:rid", recordsControllers.getRecordById);
+router.get("/:rid", recordsControllers.getRecordById);
 
 // router.get("/account/:rid", recordsControllers.getRecordsByAccountId);
 
@@ -37,6 +37,6 @@ router.post(
 //   recordsControllers.updateRecord
 // );
 
-// router.delete("/:rid", recordsControllers.deleteRecord);
+router.delete("/:rid", recordsControllers.deleteRecord);
 
 module.exports = router;

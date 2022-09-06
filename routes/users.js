@@ -14,6 +14,10 @@ router.get("/role/:rid", usersController.getUsersByUserRole);
 
 router.get("/:uid/accounts", usersController.getAccountsByUserId);
 
+router.get("/advisors/:uid/meetings", usersController.getMeetingByAdvisorId);
+
+router.get("/:uid/meetings", usersController.getMeetingByUserId);
+
 router.patch(
   "/:uid",
   [
@@ -29,12 +33,6 @@ router.patch(
 );
 
 router.delete("/:uid", usersController.deleteUserById);
-
-router.post(
-  "/resetPassword",
-  [check("email").not().isEmpty()],
-  usersController.resetPassword
-);
 
 router.patch(
   "/updatePassword/:uid",

@@ -32,6 +32,12 @@ router.post(
   usersController.login
 );
 
+router.post(
+  "/resetPassword",
+  [check("email").not().isEmpty()],
+  usersController.resetPassword
+);
+
 module.exports = router;
 
 // TODO from tuto 180, add comments to f()

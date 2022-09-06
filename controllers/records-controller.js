@@ -4,79 +4,32 @@ const mongoose = require("mongoose");
 const HttpError = require("../models/http-error");
 const Record = require("../models/record");
 const User = require("../models/user");
+const Account = require("../models/account");
 
-// const getRecordById = async (req, res, next) => {
-//   const recordId = req.params.rid;
-//   let record;
+const getRecordById = async (req, res, next) => {
+  const recordId = req.params.rid;
+  let record;
 
-//   try {
-//     record = await Record.findById(recordId);
-//   } catch (err) {
-//     const error = new HttpError(
-//       "Something went wrong, could not find an record.",
-//       500
-//     );
-//     return next(error);
-//   }
+  try {
+    record = await Record.findById(recordId);
+  } catch (err) {
+    const error = new HttpError(
+      "Something went wrong, could not find an record.",
+      500
+    );
+    return next(error);
+  }
 
-//   if (!record) {
-//     const error = new HttpError(
-//       "Could not find an record for the provided id.",
-//       404
-//     );
-//     return next(error);
-//   }
+  if (!record) {
+    const error = new HttpError(
+      "Could not find an record for the provided id.",
+      404
+    );
+    return next(error);
+  }
 
-//   res.json({ record });
-// };
-
-// const getRecordsByAccountId = async (req, res, next) => {
-//   const userId = req.params.rid;
-//   let records;
-
-//   try {
-//     records = await Record.find({ userId: userId });
-//   } catch (err) {
-//     const error = new HttpError(
-//       "Fetching records failed, please try again later",
-//       500
-//     );
-//     return next(error);
-//   }
-
-//   // // let records;
-//   // let userWithRecords;
-//   // try {
-//   //   userWithRecords = await Account.findById(userId).populate("records");
-//   // } catch (err) {
-//   //   const error = new HttpError(
-//   //     "Fetching records failed, please try again later",
-//   //     500
-//   //   );
-//   //   return next(error);
-//   // }
-
-//   // // if (!records || records.length === 0) {
-//   if (!records || records.length === 0) {
-//     return next(
-//       new HttpError("Could not find records for the provided user id.", 404)
-//     );
-//   }
-//   // // }
-
-//   // res.json({
-//   //   records: userWithRecords.records.map((record) =>
-//   //     record.toObject({ getters: true })
-//   //   ),
-//   // });
-
-//   res.json({
-//     // records: records.map((record) => {
-//     //   record.toObject({ getters: true });
-//     // }),
-//     records,
-//   });
-// };
+  res.json({ record });
+};
 
 const createRecord = async (req, res, next) => {
   const errors = validationResult(req);
@@ -94,11 +47,6 @@ const createRecord = async (req, res, next) => {
     subCategory,
     date,
     description,
-    // payee,
-    // note,
-    // paymentType,
-    // paymentStatus,
-    // place,
   } = req.body;
 
   const createdRecord = new Record({
@@ -108,37 +56,11 @@ const createRecord = async (req, res, next) => {
     category,
     subCategory,
     date,
-    // payee,
-    // note,
-    // paymentType,
-    // paymentStatus,
-    // place,
+    description,
   });
 
-  // let user;
-  // try {
-  //   user = await User.findById(creator);
-  // } catch (err) {
-  //   const error = new HttpError("Creating record failed, please try again", 500);
-  //   return next(error);
-  // }
-
-  // if (!user) {
-  //   const error = new HttpError("Could not find user for provided id", 404);
-  //   return next(error);
-  // }
-
-  // console.log(user);
-
   try {
-    console.log(recordType, accountId, amount, category, subCategory, date);
-    // const sess = await mongoose.startSession();
-    // sess.startTransaction();
-    // await createdRecord.save({ session: sess });
     await createdRecord.save();
-    // user.records.push(createdRecord);
-    // await user.save({ session: sess });
-    // await sess.commitTransaction();
   } catch (err) {
     const error = new HttpError(
       "Creating record failed, please try again.",
@@ -147,8 +69,31 @@ const createRecord = async (req, res, next) => {
     return next(error);
   }
 
-  // res.status(201).json({ record: createdRecord });
-  res.status(201).json({});
+  // update account total amount
+  let account;
+  try {
+    account = await Account.findById(accountId);
+    account.amount += amount;
+  } catch (err) {
+    const error = new HttpError(
+      "Could not find account by Id, could not update account.",
+      500
+    );
+    return next(error);
+  }
+
+  try {
+    await account.save();
+  } catch (err) {
+    const error = new HttpError(
+      "Something went wrong, could not update account.",
+      500
+    );
+    return next(error);
+  }
+  // END update account total amount
+
+  res.status(201).json({ msg: "Record is created successfully." });
 };
 
 // const updateRecord = async (req, res, next) => {
@@ -207,46 +152,63 @@ const createRecord = async (req, res, next) => {
 //   res.status(200).json({ record: record.toObject({ getters: true }) });
 // };
 
-// const deleteRecord = async (req, res, next) => {
-//   const recordId = req.params.rid;
-//   let record;
+const deleteRecord = async (req, res, next) => {
+  const recordId = req.params.rid;
+  let record;
 
-//   try {
-//     record = await Record.findById(recordId);
-//   } catch (err) {
-//     const error = new HttpError(
-//       "Something went wrong, could not delete record.",
-//       500
-//     );
-//     return next(error);
-//   }
+  try {
+    record = await Record.findById(recordId);
+  } catch (err) {
+    const error = new HttpError(
+      "Something went wrong, could not delete record.",
+      500
+    );
+    return next(error);
+  }
 
-//   if (!record) {
-//     const error = new HttpError("Could not find record for this id.", 404);
-//     return next(error);
-//   }
+  if (!record) {
+    const error = new HttpError("Could not find record for this id.", 404);
+    return next(error);
+  }
 
-//   try {
-//     // const sess = await mongoose.startSession();
-//     // sess.startTransaction();
-//     await record.remove();
-//     // await record.remove({ session: sess });
-//     // record.creator.records.pull(record);
-//     // await record.creator.save({ session: sess });
-//     // await sess.commitTransaction();
-//   } catch (err) {
-//     const error = new HttpError(
-//       "Something went wrong, could not delete record.",
-//       500
-//     );
-//     return next(error); // rollback on error
-//   }
+  try {
+    await record.remove();
+  } catch (err) {
+    const error = new HttpError(
+      "Something went wrong, could not delete record.",
+      500
+    );
+    return next(error); // rollback on error
+  }
 
-//   res.status(200).json({ message: "Deleted Record." });
-// };
+  // update account total amount
+  let account;
+  try {
+    account = await Account.findById(record.accountId);
+    account.amount -= record.amount;
+  } catch (err) {
+    const error = new HttpError(
+      "Could not find account by Id, could not update account.",
+      500
+    );
+    return next(error);
+  }
 
-// exports.getRecordById = getRecordById;
-// exports.getRecordsByAccountId = getRecordsByAccountId;
+  try {
+    await account.save();
+  } catch (err) {
+    const error = new HttpError(
+      "Something went wrong, could not update account.",
+      500
+    );
+    return next(error);
+  }
+  // END update account total amount
+
+  res.status(200).json({ msg: "Record is deleted successfully." });
+};
+
+exports.getRecordById = getRecordById;
 exports.createRecord = createRecord;
 // exports.updateRecord = updateRecord;
-// exports.deleteRecord = deleteRecord;
+exports.deleteRecord = deleteRecord;

@@ -3,113 +3,112 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const config = require("../config");
 const nanoid = require("nanoid-esm");
-const { sendEmail } = require("../utils/sendEmail");
+const { sendEmail } = require("../utils/send-email");
 
 const HttpError = require("../models/http-error");
 const User = require("../models/user");
+const UserCredentials = require("../models/user-credentials");
 const Account = require("../models/account");
-
-// const getUsers = async (req, res, next) => {
-//   let users;
-//   try {
-//     users = await User.find({}, "-password");
-//   } catch (err) {
-//     const error = new HttpError(
-//       "Fetching users failed, please try again later.",
-//       500
-//     );
-//     return next(error);
-//   }
-//   res.json({ users: users.map((user) => user.toObject({ getters: true })) });
-// };
+const Meeting = require("../models/meeting");
+const Record = require("../models/record");
+const BulkRecord = require("../models/bulk-record");
 
 const getUserById = async (req, res, next) => {
-  let user = null,
-    currentData = {};
-  console.log(req.params.uid, "uid");
+  let user = null;
   try {
     user = await User.findById(req.params.uid);
   } catch (err) {
-    const error = new HttpError(
-      "Fetching user failed, please try again later.",
-      500
-    );
+    const error = new HttpError("Fetching user failed, please try again.", 500);
     return next(error);
   }
-  if (user) {
-    user.password = undefined;
-  }
-  // delete user[password];
   res.json({ user });
 };
 
 const getUsersByUserRole = async (req, res, next) => {
-  let users = null,
-    role = req.params.rid;
-  if (role === "1974") {
-    try {
-      users = await User.find({ role });
-    } catch (err) {
-      const error = new HttpError(
-        "Fetching users failed, please try again later.",
-        500
-      );
-      return next(error);
-    }
-    if (users) {
-      users = users.map((user) => {
-        return {
-          city: user.city,
-          dob: user.dob,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          maritalStatus: user.maritalStatus,
-          phone: user.phone,
-          id: user.id,
-        };
-      });
-    }
-  } else if (role === "2022") {
-    try {
-      users = await User.find({ role });
-    } catch (err) {
-      const error = new HttpError(
-        "Fetching users failed, please try again later.",
-        500
-      );
-      return next(error);
-    }
-    if (users) {
-      users = users.map((user) => {
-        return {
-          city: user.city,
-          dob: user.dob,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          maritalStatus: user.maritalStatus,
-          phone: user.phone,
-          id: user.id,
-          gender: user.gender,
-        };
-      });
-    }
+  let users = null;
+  try {
+    users = await UserCredentials.aggregate([
+      {
+        $match: {
+          role: req.params.rid,
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      {
+        $unwind: {
+          path: "$user",
+          preserveNullAndEmptyArrays: false,
+        },
+      },
+      {
+        $project: {
+          "user.firstName": 1,
+          "user.lastName": 1,
+          "user.maritalStatus": 1,
+          "user.occupation": 1,
+          "user.city": 1,
+          "user.phone": 1,
+          "user.dob": 1,
+          "user.gender": 1,
+          "user.advisor": 1,
+          "user._id": 1,
+        },
+      },
+    ]);
+  } catch (err) {
+    const error = new HttpError(
+      "Fetching user accounts is failed, please try again.",
+      500
+    );
+    return next(error);
   }
   res.json({ users });
 };
 
 const getAccountsByUserId = async (req, res, next) => {
-  console.log(req.params.uid, "uid");
   try {
     userAccount = await Account.find({ userId: req.params.uid });
   } catch (err) {
     const error = new HttpError(
-      "Fetching user accounts failed, please try again later.",
+      "Fetching user accounts is failed, please try again.",
       500
     );
     return next(error);
   }
-  // delete user[password];
   res.json({ userAccount });
+};
+
+const getMeetingByUserId = async (req, res, next) => {
+  try {
+    userMeetings = await Meeting.find({ userId: req.params.uid });
+  } catch (err) {
+    const error = new HttpError(
+      "Fetching user meetings is failed, please try again.",
+      500
+    );
+    return next(error);
+  }
+  res.json({ userMeetings });
+};
+
+const getMeetingByAdvisorId = async (req, res, next) => {
+  try {
+    advisorMeetings = await Meeting.find({ advisorId: req.params.uid });
+  } catch (err) {
+    const error = new HttpError(
+      "Fetching user meetings is failed, please try again.",
+      500
+    );
+    return next(error);
+  }
+  res.json({ advisorMeetings });
 };
 
 const updatePasswordByUserId = async (req, res, next) => {
@@ -122,22 +121,14 @@ const updatePasswordByUserId = async (req, res, next) => {
 
   const uId = req.params.uid;
 
-  console.log(uId);
+  if (uId !== req.userData.userId) {
+    return next(new HttpError("Not authenticated", 422));
+  }
 
   let isValid = false,
     hashedNewPassword;
 
   const { currentPassword, newPassword } = req.body;
-
-  // try {
-  //   hashedCurrentPassword = await bcrypt.hash(currentPassword, 12);
-  // } catch (err) {
-  //   const error = new HttpError(
-  //     "Could not reset password, please try again.",
-  //     500
-  //   );
-  //   return next(error);
-  // }
 
   try {
     hashedNewPassword = await bcrypt.hash(newPassword, 12);
@@ -149,11 +140,12 @@ const updatePasswordByUserId = async (req, res, next) => {
     return next(error);
   }
 
+  let user;
   try {
-    user = await User.findById(req.params.uid);
+    user = await UserCredentials.findById(req.params.uid);
   } catch (err) {
     const error = new HttpError(
-      "Fetching user failed, please try again later.",
+      "Fetching user is failed, please try again.",
       500
     );
     return next(error);
@@ -166,30 +158,36 @@ const updatePasswordByUserId = async (req, res, next) => {
     return next(error);
   }
 
-  console.log(isValid);
-
-  // console.log(hashedCurrentPassword, "hashedCurrentPassword");
-  // console.log(user.password, "user.password");
-  // console.log(hashedNewPassword, "hashedNewPassword");
-  // let existingUser;
-
+  let existingUser;
   try {
     if (isValid) {
-      existingUser = await User.findByIdAndUpdate(uId, {
+      existingUser = await UserCredentials.findByIdAndUpdate(uId, {
         password: hashedNewPassword,
         initPassword: false,
       });
-      sendEmail(existingUser.email, "", "init");
+      sendEmail(existingUser.email, "", "", "init");
     }
   } catch (err) {
     const error = new HttpError(
-      "No user found for this user id, please try again2.",
+      "No user found for this user id, please try again.",
       500
     );
     return next(error);
   }
 
-  res.status(201).json({ success: "Successfully Updated" });
+  token = jwt.sign(
+    {
+      id: existingUser.id,
+      userId: existingUser.userId,
+      email: existingUser.email,
+      initPassword: false,
+      role: existingUser.role,
+    },
+    `${config.jwt.SECRET}`,
+    { expiresIn: "1h" }
+  );
+
+  res.status(201).json({ token });
 };
 
 const updateUserById = async (req, res, next) => {
@@ -202,10 +200,7 @@ const updateUserById = async (req, res, next) => {
 
   const uId = req.params.uid;
 
-  console.log(typeof uId);
-
   const {
-    email,
     firstName,
     lastName,
     phone,
@@ -213,6 +208,12 @@ const updateUserById = async (req, res, next) => {
     gender,
     maritalStatus,
     occupation,
+    city,
+    title,
+    headline,
+    description,
+    linkedIn,
+    advisor,
   } = req.body;
 
   let existingUser;
@@ -225,38 +226,105 @@ const updateUserById = async (req, res, next) => {
       gender,
       maritalStatus,
       occupation,
+      city,
+      title,
+      headline,
+      description,
+      linkedIn,
+      advisor,
     });
   } catch (err) {
     const error = new HttpError(
-      "No user found for this user id, please try again2.",
+      "No user found for this user id, please try again.",
       500
     );
     return next(error);
   }
-
-  res.status(201).json({ success: "Successfully Updated" });
+  res.status(201).json({ msg: "Successfully Updated" });
 };
 
 const deleteUserById = async (req, res, next) => {
   const uId = req.params.uid;
-  // delete user's accounts and records
+
+  if (uId !== req.userData.userId) {
+    return next(new HttpError("Not authenticated", 422));
+  }
+
   let existingUser;
+
   try {
-    existingUser = await User.findByIdAndDelete(uId);
+    existingUser = await UserCredentials.findByIdAndDelete(uId);
+    sendEmail(existingUser.email, "", "", "delete");
   } catch (err) {
     const error = new HttpError(
-      "No user found for this user id, please try again2.",
+      "No user found for this user id, please try again.",
       500
     );
     return next(error);
   }
 
-  res.status(201).json({ success: "Successfully Deleted" });
+  // delete user data from Users table
+  try {
+    await User.findByIdAndDelete(existingUser.userId);
+  } catch (err) {
+    const error = new HttpError(
+      "No user found for this user id, please try again.",
+      500
+    );
+    return next(error);
+  }
+
+  // delete user data from Accounts table
+  try {
+    await Account.deleteMany(existingUser.userId);
+  } catch (err) {
+    const error = new HttpError(
+      "No accounts found for this user id, please try again.",
+      500
+    );
+    return next(error);
+  }
+
+  // delete user data from Records table
+  try {
+    await Record.deleteMany(existingUser.userId);
+  } catch (err) {
+    const error = new HttpError(
+      "No records found for this user id, please try again.",
+      500
+    );
+    return next(error);
+  }
+
+  // delete user data from Bulk Records table
+  try {
+    await BulkRecord.deleteMany(existingUser.userId);
+  } catch (err) {
+    const error = new HttpError(
+      "No bulk records found for this user id, please try again.",
+      500
+    );
+    return next(error);
+  }
+
+  // delete user data from Meetings table
+  try {
+    await Meeting.deleteMany(existingUser.userId);
+  } catch (err) {
+    const error = new HttpError(
+      "No meetings found for this user id, please try again.",
+      500
+    );
+    return next(error);
+  }
+
+  res.status(201).json({ msg: "Successfully Deleted" });
 };
 
 const signup = async (req, res, next) => {
   const errors = validationResult(req);
-  const tempPassword = nanoid(8).toUpperCase();
+  // const tempPassword = nanoid(8).toUpperCase();
+  const tempPassword = "111111";
 
   if (!errors.isEmpty()) {
     return next(
@@ -276,27 +344,23 @@ const signup = async (req, res, next) => {
     initPassword,
     city,
     role,
+    title,
+    headline,
+    description,
+    linkedIn,
   } = req.body;
 
   let existingUser;
 
   try {
-    existingUser = await User.findOne({ email: email });
+    existingUser = await UserCredentials.findOne({ email: email });
   } catch (err) {
-    // const error = new HttpError(
-    //   "Signing up failed, please try again later.",
-    //   500
-    // );
     const error = new Error("Signing up failed, please try again later.");
     error.http_code = 500;
     return next(error);
   }
 
   if (existingUser) {
-    // const error = new HttpError(
-    //   "User exists already, please login instead.",
-    //   422
-    // );
     const error = new Error(
       "User exists for the given email address, please login instead."
     );
@@ -305,6 +369,7 @@ const signup = async (req, res, next) => {
   }
 
   let hashedPassword;
+
   try {
     hashedPassword = await bcrypt.hash(tempPassword, 12);
   } catch (err) {
@@ -319,21 +384,32 @@ const signup = async (req, res, next) => {
     firstName,
     lastName,
     phone,
-    email,
     dob,
     gender,
     maritalStatus,
     occupation,
+    city,
+    title: title ? title : "",
+    headline: headline ? title : "",
+    description: description ? title : "",
+    linkedIn: linkedIn ? title : "",
+    advisor: null,
+  });
+
+  const createdUserCredentials = new UserCredentials({
+    email,
     initPassword,
     // image: req.file.path,
     password: hashedPassword,
     role,
-    city,
   });
 
   try {
-    await createdUser.save();
-    sendEmail(email, tempPassword, "new");
+    const user = createdUser.save().then((user) => {
+      createdUserCredentials.userId = user._id;
+      createdUserCredentials.save();
+      sendEmail(email, firstName, tempPassword, "new");
+    });
   } catch (err) {
     const error = new HttpError(
       "Signing up failed, please try again later.",
@@ -346,24 +422,19 @@ const signup = async (req, res, next) => {
 
 const login = async (req, res, next) => {
   const { email, password } = req.body;
-  console.log(email, password, "email, password");
   let existingUser;
 
   try {
-    existingUser = await User.findOne({ email: email });
+    existingUser = await UserCredentials.findOne({ email: email });
   } catch (err) {
-    const error = new HttpError(
-      "Logging in failed, please try again later.",
-      500
-    );
+    const error = new Error("Logging in failed, please try again later.");
+    error.http_code = 500;
     return next(error);
   }
 
   if (!existingUser) {
-    const error = new HttpError(
-      "Invalid credentials, could not log you in.",
-      401
-    );
+    const error = new Error("Invalid credentials, could not log you in.");
+    error.http_code = 401;
     return next(error);
   }
 
@@ -371,23 +442,25 @@ const login = async (req, res, next) => {
   try {
     isValidPassword = await bcrypt.compare(password, existingUser.password);
   } catch (err) {
-    const error = new HttpError(
-      "Could not log you in, please check your credentials and try again",
-      500
+    const error = new Error(
+      "Could not log you in, please check your credentials and try again"
     );
+    error.http_code = 500;
     return next(error);
   }
 
   if (!isValidPassword) {
-    const err = new HttpError("Invalid credentials, could not log you in", 401);
-    return next(err);
+    const error = new Error("Invalid credentials, could not log you in");
+    error.http_code = 401;
+    return next(error);
   }
 
   let token;
   try {
     token = jwt.sign(
       {
-        userId: existingUser.id,
+        id: existingUser.id,
+        userId: existingUser.userId,
         email: existingUser.email,
         initPassword: existingUser.initPassword,
         role: existingUser.role,
@@ -396,10 +469,8 @@ const login = async (req, res, next) => {
       { expiresIn: "1h" }
     );
   } catch (err) {
-    const error = new HttpError(
-      "Logging in failed, please try again later.",
-      500
-    );
+    const error = new Error("Logging in failed, please try again later.");
+    error.http_code = 401;
     return next(error);
   }
 
@@ -409,8 +480,6 @@ const login = async (req, res, next) => {
 const resetPassword = async (req, res, next) => {
   const errors = validationResult(req);
   const tempPassword = nanoid(8).toUpperCase();
-
-  console.log(tempPassword, "tempPassword");
 
   if (!errors.isEmpty()) {
     return next(
@@ -432,33 +501,30 @@ const resetPassword = async (req, res, next) => {
   }
 
   try {
-    existingUser = await User.findOneAndUpdate(
+    existingUser = await UserCredentials.findOneAndUpdate(
       { email: email },
       { password: hashedPassword }
     );
     if (existingUser.email == email) {
-      sendEmail(email, tempPassword, "reset");
+      sendEmail(email, "", tempPassword, "reset");
     }
   } catch (err) {
-    const error = new HttpError(
-      "No user found for this email, please try again2.",
-      500
-    );
+    const error = new Error("No user found for this email, please try again.");
+    error.http_code = 500;
     return next(error);
   }
 
-  res.status(201).json({});
+  res.status(201).json({ msg: "Password reset successfully." });
 };
 
-// exports.getUsers = getUsers;
-exports.getUserById = getUserById;
-exports.getUsersByUserRole = getUsersByUserRole;
-exports.getAccountsByUserId = getAccountsByUserId;
 exports.signup = signup;
 exports.login = login;
 exports.resetPassword = resetPassword;
-exports.updateUserById = updateUserById;
 exports.updatePasswordByUserId = updatePasswordByUserId;
+exports.getUserById = getUserById;
+exports.getUsersByUserRole = getUsersByUserRole;
+exports.getAccountsByUserId = getAccountsByUserId;
+exports.getMeetingByUserId = getMeetingByUserId;
+exports.getMeetingByAdvisorId = getMeetingByAdvisorId;
+exports.updateUserById = updateUserById;
 exports.deleteUserById = deleteUserById;
-// update user
-// delete user
