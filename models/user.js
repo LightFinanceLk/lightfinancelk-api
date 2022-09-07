@@ -17,7 +17,7 @@ const userSchema = new Schema({
   description: { type: String, required: false },
   linkedIn: { type: String, required: false },
   advisor: { type: String, required: false },
-  // image: { type: String, required: true },
+  image: { type: String, required: false },
 });
 
 userSchema.plugin(uniqueValidator);

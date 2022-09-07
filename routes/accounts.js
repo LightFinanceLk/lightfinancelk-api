@@ -39,6 +39,6 @@ router.patch(
   accountsControllers.updateAccount
 );
 
-// router.delete("/:aid", accountsControllers.deleteAccount);
+router.delete("/:aid", accountsControllers.deleteAccount);
 
 module.exports = router;

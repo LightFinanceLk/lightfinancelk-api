@@ -1,3 +1,4 @@
+const fs = require("fs");
 const { validationResult } = require("express-validator");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -214,6 +215,7 @@ const updateUserById = async (req, res, next) => {
     description,
     linkedIn,
     advisor,
+    image,
   } = req.body;
 
   let existingUser;
@@ -227,11 +229,12 @@ const updateUserById = async (req, res, next) => {
       maritalStatus,
       occupation,
       city,
-      title,
-      headline,
-      description,
-      linkedIn,
-      advisor,
+      title: title ? title : "",
+      headline: headline ? headline : "",
+      description: description ? description : "",
+      linkedIn: linkedIn ? linkedIn : "",
+      advisor: advisor ? advisor : null,
+      image: image ? image : "",
     });
   } catch (err) {
     const error = new HttpError(
@@ -394,12 +397,12 @@ const signup = async (req, res, next) => {
     description: description ? title : "",
     linkedIn: linkedIn ? title : "",
     advisor: null,
+    image: "",
   });
 
   const createdUserCredentials = new UserCredentials({
     email,
     initPassword,
-    // image: req.file.path,
     password: hashedPassword,
     role,
   });
@@ -517,6 +520,32 @@ const resetPassword = async (req, res, next) => {
   res.status(201).json({ msg: "Password reset successfully." });
 };
 
+const updateProfileImage = async (req, res, next) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return next(
+      new HttpError("Invalid inputs passed, please check your data.", 422)
+    );
+  }
+
+  const uId = req.params.uid;
+
+  let existingUser;
+  try {
+    existingUser = await User.findByIdAndUpdate(uId, {
+      image: req.file.path,
+    });
+  } catch (err) {
+    const error = new HttpError(
+      "No user found for this user id, please try again.",
+      500
+    );
+    return next(error);
+  }
+  res.status(201).json({ msg: "Image uploaded successfully." });
+};
+
 exports.signup = signup;
 exports.login = login;
 exports.resetPassword = resetPassword;
@@ -528,3 +557,4 @@ exports.getMeetingByUserId = getMeetingByUserId;
 exports.getMeetingByAdvisorId = getMeetingByAdvisorId;
 exports.updateUserById = updateUserById;
 exports.deleteUserById = deleteUserById;
+exports.updateProfileImage = updateProfileImage;

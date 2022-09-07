@@ -5,6 +5,7 @@ const HttpError = require("../models/http-error");
 const Account = require("../models/account");
 const User = require("../models/user");
 const Record = require("../models/record");
+const BulkRecord = require("../models/bulk-record");
 // const { use } = require("../routes/users");
 const checkAuth = require("../middleware/check-auth");
 
@@ -210,47 +211,65 @@ const updateAccount = async (req, res, next) => {
   res.status(200).json({ account: account.toObject({ getters: true }) });
 };
 
-// const deleteAccount = async (req, res, next) => {
-//   const accountId = req.params.aid;
-//   let account;
+const deleteAccount = async (req, res, next) => {
+  const accountId = req.params.aid;
+  let account;
 
-//   try {
-//     account = await Account.findById(accountId);
-//   } catch (err) {
-//     const error = new HttpError(
-//       "Something went wrong, could not delete account.",
-//       500
-//     );
-//     return next(error);
-//   }
+  try {
+    account = await Account.findById(accountId);
+  } catch (err) {
+    const error = new HttpError(
+      "Something went wrong, could not delete account.",
+      500
+    );
+    return next(error);
+  }
 
-//   if (!account) {
-//     const error = new HttpError("Could not find account for this id.", 404);
-//     return next(error);
-//   }
+  if (!account) {
+    const error = new HttpError("Could not find account for this id.", 404);
+    return next(error);
+  }
 
-//   try {
-//     // const sess = await mongoose.startSession();
-//     // sess.startTransaction();
-//     await account.remove();
-//     // await account.remove({ session: sess });
-//     // account.creator.accounts.pull(account);
-//     // await account.creator.save({ session: sess });
-//     // await sess.commitTransaction();
-//   } catch (err) {
-//     const error = new HttpError(
-//       "Something went wrong, could not delete account.",
-//       500
-//     );
-//     return next(error);
-//   }
+  try {
+    await account.remove();
+  } catch (err) {
+    const error = new HttpError(
+      "Something went wrong, could not delete account.",
+      500
+    );
+    return next(error);
+  }
 
-//   res.status(200).json({ message: "Deleted Account." });
-// };
+  // delete related records
+
+  try {
+    await Record.deleteMany({ accountId: accountId });
+  } catch (err) {
+    const error = new HttpError(
+      "Something went wrong, could not delete records.",
+      500
+    );
+    return next(error);
+  }
+
+  // delete related bulk records
+
+  try {
+    await BulkRecord.deleteMany({ accountId: accountId });
+  } catch (err) {
+    const error = new HttpError(
+      "Something went wrong, could not delete bulk records.",
+      500
+    );
+    return next(error);
+  }
+
+  res.status(200).json({ msg: "Account is deleted successfully." });
+};
 
 exports.getAccountById = getAccountById;
 exports.getRecordsByAccountId = getRecordsByAccountId;
 // exports.getAccountsByUserId = getAccountsByUserId;
 exports.createAccount = createAccount;
 exports.updateAccount = updateAccount;
-// exports.deleteAccount = deleteAccount;
+exports.deleteAccount = deleteAccount;

@@ -1,3 +1,4 @@
+const path = require("path");
 const express = require("express");
 var cors = require("cors");
 const bodyParser = require("body-parser");
@@ -14,6 +15,8 @@ const config = require("./config");
 const app = express();
 
 app.use(bodyParser.json());
+
+app.use("/uploads/images", express.static(path.join("uploads", "images")));
 
 app.use(cors());
 app.options("*", cors());
