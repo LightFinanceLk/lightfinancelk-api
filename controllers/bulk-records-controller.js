@@ -121,12 +121,21 @@ const deleteBulkRecord = async (req, res, next) => {
     return next(error);
   }
 
-  let records;
-
   // calculate total amount to sum up the account total
-  let recordsTotalAmount = records.reduce((acc, record) => {
-    return acc + record.amount;
-  }, 0);
+  let recordsTotalAmount = 0;
+
+  try {
+    let recordsToCalculate = await Record.find({ bulkRecordId });
+    if (recordsToCalculate) {
+      recordsTotalAmount = recordsToCalculate.reduce((acc, record) => {
+        return acc + record.amount;
+      }, 0);
+    }
+  } catch (error) {
+    console.log(error);
+  }
+
+  let records;
 
   // remove records
   try {
@@ -154,11 +163,11 @@ const deleteBulkRecord = async (req, res, next) => {
     );
     account.bulkRecordIds = [...filteredAccountBulkRecordIds];
     account.amount -= recordsTotalAmount;
-    try {
-      await account.save();
-    } catch (error) {
-      console.log(error);
-    }
+  } catch (error) {
+    console.log(error);
+  }
+  try {
+    await account.save();
   } catch (error) {
     console.log(error);
   }
