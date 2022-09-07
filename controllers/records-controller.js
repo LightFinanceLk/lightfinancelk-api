@@ -101,17 +101,8 @@ const updateRecord = async (req, res, next) => {
     );
   }
 
-  const {
-    amount,
-    currency,
-    category,
-    date,
-    payee,
-    note,
-    paymentType,
-    paymentStatus,
-    place,
-  } = req.body;
+  const { amount, category, date, paymentType, subCategory, description } =
+    req.body;
 
   const recordId = req.params.rid;
   let record;
@@ -127,14 +118,11 @@ const updateRecord = async (req, res, next) => {
   }
 
   record.amount = amount;
-  record.currency = currency;
-  record.category = category;
   record.date = date;
-  record.payee = payee;
-  record.note = note;
   record.paymentType = paymentType;
-  record.paymentStatus = paymentStatus;
-  record.place = place;
+  record.category = category ? category : "";
+  record.subCategory = subCategory ? subCategory : "";
+  record.description = description ? description : "";
 
   try {
     await record.save();

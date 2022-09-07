@@ -325,8 +325,7 @@ const deleteUserById = async (req, res, next) => {
 
 const signup = async (req, res, next) => {
   const errors = validationResult(req);
-  // const tempPassword = nanoid(8).toUpperCase();
-  const tempPassword = "111111";
+  const tempPassword = nanoid(8).toUpperCase();
 
   if (!errors.isEmpty()) {
     return next(
