@@ -30,7 +30,7 @@ const createMeeting = async (req, res, next) => {
     );
     return next(error);
   }
-  res.status(201).json({ msg: "Successful" });
+  res.status(201).json({ msg: "Meeting is created successfully." });
 };
 
 const updateMeeting = async (req, res, next) => {
@@ -72,7 +72,7 @@ const updateMeeting = async (req, res, next) => {
     return next(error);
   }
 
-  res.status(200).json({ msg: "Successful" });
+  res.status(200).json({ msg: "Account is updated successfully." });
 };
 
 const deleteMeeting = async (req, res, next) => {
@@ -104,7 +104,7 @@ const deleteMeeting = async (req, res, next) => {
     return next(error);
   }
 
-  res.status(200).json({ message: "Successfully Deleted Meeting." });
+  res.status(200).json({ msg: "Account is deleted successfully." });
 };
 
 exports.createMeeting = createMeeting;

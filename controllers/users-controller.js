@@ -242,7 +242,7 @@ const updateUserById = async (req, res, next) => {
     );
     return next(error);
   }
-  res.status(201).json({ msg: "Successfully Updated" });
+  res.status(201).json({ msg: "User is updated successfully." });
 };
 
 const deleteUserById = async (req, res, next) => {
@@ -320,7 +320,7 @@ const deleteUserById = async (req, res, next) => {
     return next(error);
   }
 
-  res.status(201).json({ msg: "Successfully Deleted" });
+  res.status(201).json({ msg: "User is deleted successfully." });
 };
 
 const signup = async (req, res, next) => {
@@ -419,7 +419,7 @@ const signup = async (req, res, next) => {
     );
     return next(error);
   }
-  res.status(201).json({});
+  res.status(201).json({ msg: "User is registered successfully." });
 };
 
 const login = async (req, res, next) => {
@@ -516,7 +516,7 @@ const resetPassword = async (req, res, next) => {
     return next(error);
   }
 
-  res.status(201).json({ msg: "Password reset successfully." });
+  res.status(201).json({ msg: "Password is reset successfully." });
 };
 
 const updateProfileImage = async (req, res, next) => {
@@ -542,7 +542,7 @@ const updateProfileImage = async (req, res, next) => {
     );
     return next(error);
   }
-  res.status(201).json({ msg: "Image uploaded successfully." });
+  res.status(201).json({ msg: "Image is uploaded successfully." });
 };
 
 exports.signup = signup;

@@ -87,7 +87,7 @@ const createBulkRecord = async (req, res, next) => {
     return next(error);
   }
 
-  res.status(201).json({});
+  res.status(201).json({ msg: "Bulk record is created successfully." });
 };
 
 const deleteBulkRecord = async (req, res, next) => {
@@ -163,7 +163,7 @@ const deleteBulkRecord = async (req, res, next) => {
     console.log(error);
   }
 
-  res.status(200).json({ message: "Deleted Record." });
+  res.status(200).json({ msg: "Bulk record is deleted successfully." });
 };
 
 exports.createBulkRecord = createBulkRecord;

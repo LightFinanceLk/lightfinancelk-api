@@ -83,7 +83,7 @@ const createAccount = async (req, res, next) => {
     return next(error);
   }
 
-  res.status(201).json({});
+  res.status(201).json({ msg: "Account is created successfully." });
 };
 
 const updateAccount = async (req, res, next) => {
@@ -126,7 +126,7 @@ const updateAccount = async (req, res, next) => {
     return next(error);
   }
 
-  res.status(200).json({ account: account.toObject({ getters: true }) });
+  res.status(200).json({ msg: "Account is updated successfully." });
 };
 
 const deleteAccount = async (req, res, next) => {

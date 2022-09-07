@@ -146,7 +146,7 @@ const updateRecord = async (req, res, next) => {
     return next(error);
   }
 
-  res.status(200).json({ record: record.toObject({ getters: true }) });
+  res.status(200).json({ msg: "Record is updated successfully." });
 };
 
 const deleteRecord = async (req, res, next) => {
