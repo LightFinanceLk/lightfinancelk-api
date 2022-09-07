@@ -10,32 +10,28 @@ router.use(checkAuth);
 
 router.get("/:rid", recordsControllers.getRecordById);
 
-// router.get("/account/:rid", recordsControllers.getRecordsByAccountId);
-
 router.post(
   "/",
   [
     check("recordType").notEmpty(),
     check("accountId").notEmpty(),
     check("amount").notEmpty(),
-    // check("currency").notEmpty(),
     check("category").notEmpty(),
     check("date").notEmpty(),
   ],
   recordsControllers.createRecord
 );
 
-// router.patch(
-//   "/:rid",
-//   [
-//     check("recordType").notEmpty(),
-//     check("amount").notEmpty(),
-//     // check("currency").notEmpty(),
-//     check("category").notEmpty(),
-//     check("date").notEmpty(),
-//   ],
-//   recordsControllers.updateRecord
-// );
+router.patch(
+  "/:rid",
+  [
+    check("recordType").notEmpty(),
+    check("amount").notEmpty(),
+    check("category").notEmpty(),
+    check("date").notEmpty(),
+  ],
+  recordsControllers.updateRecord
+);
 
 router.delete("/:rid", recordsControllers.deleteRecord);
 

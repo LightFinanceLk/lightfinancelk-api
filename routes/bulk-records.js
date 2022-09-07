@@ -10,25 +10,7 @@ router.use(checkAuth);
 
 router.get("/:aid", bulkRecordsControllers.getBulkRecordsByAccountId);
 
-// router.get("/account/:rid", recordsControllers.getRecordsByAccountId);
-
-router.post(
-  "/:aid",
-  // [check("records").notEmpty()],
-  bulkRecordsControllers.createBulkRecord
-);
-
-// router.patch(
-//   "/:rid",
-//   [
-//     check("recordType").notEmpty(),
-//     check("amount").notEmpty(),
-//     // check("currency").notEmpty(),
-//     check("category").notEmpty(),
-//     check("date").notEmpty(),
-//   ],
-//   recordsControllers.updateRecord
-// );
+router.post("/:aid", bulkRecordsControllers.createBulkRecord);
 
 router.delete("/:rid", bulkRecordsControllers.deleteBulkRecord);
 

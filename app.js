@@ -1,9 +1,8 @@
 const path = require("path");
 const express = require("express");
-var cors = require("cors");
+const cors = require("cors");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
-
 const authRoutes = require("./routes/auth");
 const usersRoutes = require("./routes/users");
 const accountRoutes = require("./routes/accounts");
@@ -20,21 +19,6 @@ app.use("/uploads/images", express.static(path.join("uploads", "images")));
 
 app.use(cors());
 app.options("*", cors());
-
-// fix CORS error
-// app.use((req, res, next) => {
-//   res.setHeader("Access-Control-Allow-Origin", "*");
-//   res.setHeader(
-//     "Access-Control-Allow-Headers",
-//     "Origin, X-Requested-With, Content-Type, Accept, Authorization"
-//   );
-//   res.setHeader(
-//     "Access-Control-Allow-Methods",
-//     "GET, POST, PATCH, DELETE, OPTIONS"
-//   );
-//   next();
-// });
-// End fix CORS error
 
 app.use("/api/users", usersRoutes);
 app.use("/api/auth", authRoutes);

@@ -1,9 +1,6 @@
 const { validationResult } = require("express-validator");
-const mongoose = require("mongoose");
-
 const HttpError = require("../models/http-error");
 const Record = require("../models/record");
-const User = require("../models/user");
 const Account = require("../models/account");
 
 const getRecordById = async (req, res, next) => {
@@ -96,61 +93,61 @@ const createRecord = async (req, res, next) => {
   res.status(201).json({ msg: "Record is created successfully." });
 };
 
-// const updateRecord = async (req, res, next) => {
-//   const errors = validationResult(req);
-//   if (!errors.isEmpty()) {
-//     return next(
-//       new HttpError("Invalid inputs passed, please check your data.", 422)
-//     );
-//   }
+const updateRecord = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return next(
+      new HttpError("Invalid inputs passed, please check your data.", 422)
+    );
+  }
 
-//   const {
-//     amount,
-//     currency,
-//     category,
-//     date,
-//     payee,
-//     note,
-//     paymentType,
-//     paymentStatus,
-//     place,
-//   } = req.body;
+  const {
+    amount,
+    currency,
+    category,
+    date,
+    payee,
+    note,
+    paymentType,
+    paymentStatus,
+    place,
+  } = req.body;
 
-//   const recordId = req.params.rid;
-//   let record;
+  const recordId = req.params.rid;
+  let record;
 
-//   try {
-//     record = await Record.findById(recordId);
-//   } catch (err) {
-//     const error = new HttpError(
-//       "Something went wrong, could not update record.",
-//       500
-//     );
-//     return next(error);
-//   }
+  try {
+    record = await Record.findById(recordId);
+  } catch (err) {
+    const error = new HttpError(
+      "Something went wrong, could not update record.",
+      500
+    );
+    return next(error);
+  }
 
-//   record.amount = amount;
-//   record.currency = currency;
-//   record.category = category;
-//   record.date = date;
-//   record.payee = payee;
-//   record.note = note;
-//   record.paymentType = paymentType;
-//   record.paymentStatus = paymentStatus;
-//   record.place = place;
+  record.amount = amount;
+  record.currency = currency;
+  record.category = category;
+  record.date = date;
+  record.payee = payee;
+  record.note = note;
+  record.paymentType = paymentType;
+  record.paymentStatus = paymentStatus;
+  record.place = place;
 
-//   try {
-//     await record.save();
-//   } catch (err) {
-//     const error = new HttpError(
-//       "Something went wrong, could not update record.",
-//       500
-//     );
-//     return next(error);
-//   }
+  try {
+    await record.save();
+  } catch (err) {
+    const error = new HttpError(
+      "Something went wrong, could not update record.",
+      500
+    );
+    return next(error);
+  }
 
-//   res.status(200).json({ record: record.toObject({ getters: true }) });
-// };
+  res.status(200).json({ record: record.toObject({ getters: true }) });
+};
 
 const deleteRecord = async (req, res, next) => {
   const recordId = req.params.rid;
@@ -178,7 +175,7 @@ const deleteRecord = async (req, res, next) => {
       "Something went wrong, could not delete record.",
       500
     );
-    return next(error); // rollback on error
+    return next(error);
   }
 
   // update account total amount
@@ -210,5 +207,5 @@ const deleteRecord = async (req, res, next) => {
 
 exports.getRecordById = getRecordById;
 exports.createRecord = createRecord;
-// exports.updateRecord = updateRecord;
+exports.updateRecord = updateRecord;
 exports.deleteRecord = deleteRecord;

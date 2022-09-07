@@ -2,13 +2,11 @@ const express = require("express");
 const { check } = require("express-validator");
 
 const usersController = require("../controllers/users-controller");
-// const fileUpload = require('../middleware/file-upload');
 
 const router = express.Router();
 
 router.post(
   "/signup",
-  // fileUpload.single("image"),
   [
     check("firstName").not().isEmpty(),
     check("lastName").not().isEmpty(),
@@ -39,5 +37,3 @@ router.post(
 );
 
 module.exports = router;
-
-// TODO from tuto 180, add comments to f()

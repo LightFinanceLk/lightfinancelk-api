@@ -6,12 +6,7 @@ const checkAuth = require("../middleware/check-auth");
 
 const router = express.Router();
 
-// router.get("/user/:aid", accountsControllers.getAccountsByUserId);
-// '/users/:userid/accounts'
-
 router.use(checkAuth);
-
-// router.get("/user/:aid/meetings", meetingsControllers.getMeetingsByAdvisorId);
 
 router.post(
   "/",

@@ -9,8 +9,6 @@ const userCredentialsSchema = new Schema({
   userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
   role: { type: String, required: true },
   initPassword: { type: Boolean, required: false },
-  // image: { type: String, required: true },
-  // places: [{ type: mongoose.Types.ObjectId, required: true, ref: 'Place'}]
 });
 
 userCredentialsSchema.plugin(uniqueValidator);

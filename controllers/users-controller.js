@@ -5,7 +5,6 @@ const jwt = require("jsonwebtoken");
 const config = require("../config");
 const nanoid = require("nanoid-esm");
 const { sendEmail } = require("../utils/send-email");
-
 const HttpError = require("../models/http-error");
 const User = require("../models/user");
 const UserCredentials = require("../models/user-credentials");

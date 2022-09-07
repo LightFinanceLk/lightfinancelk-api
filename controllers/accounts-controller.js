@@ -1,13 +1,8 @@
 const { validationResult } = require("express-validator");
-const mongoose = require("mongoose");
-
 const HttpError = require("../models/http-error");
 const Account = require("../models/account");
-const User = require("../models/user");
 const Record = require("../models/record");
 const BulkRecord = require("../models/bulk-record");
-// const { use } = require("../routes/users");
-const checkAuth = require("../middleware/check-auth");
 
 const getAccountById = async (req, res, next) => {
   const accountId = req.params.aid;
@@ -36,7 +31,6 @@ const getAccountById = async (req, res, next) => {
 
 const getRecordsByAccountId = async (req, res, next) => {
   const accountId = req.params.aid;
-  console.log(accountId);
   let records;
 
   try {
@@ -60,67 +54,7 @@ const getRecordsByAccountId = async (req, res, next) => {
   res.json({ records });
 };
 
-// const getAccountsByUserId = async (req, res, next) => {
-//   const userId = req.params.aid;
-//   let accounts;
-
-//   try {
-//     accounts = await Account.find({ userId: userId });
-//   } catch (err) {
-//     const error = new HttpError(
-//       "Fetching accounts failed, please try again later",
-//       500
-//     );
-//     return next(error);
-//   }
-
-//   // // let accounts;
-//   // let userWithAccounts;
-//   // try {
-//   //   userWithAccounts = await User.findById(userId).populate("accounts");
-//   // } catch (err) {
-//   //   const error = new HttpError(
-//   //     "Fetching accounts failed, please try again later",
-//   //     500
-//   //   );
-//   //   return next(error);
-//   // }
-
-//   // // if (!accounts || accounts.length === 0) {
-//   if (!accounts || accounts.length === 0) {
-//     return next(
-//       new HttpError("Could not find accounts for the provided user id.", 404)
-//     );
-//   }
-//   // // }
-
-//   // res.json({
-//   //   accounts: userWithAccounts.accounts.map((account) =>
-//   //     account.toObject({ getters: true })
-//   //   ),
-//   // });
-
-//   res.json({
-//     // accounts: accounts.map((account) => {
-//     //   account.toObject({ getters: true });
-//     // }),
-//     accounts,
-//   });
-// };
-
-// use(checkAuth); // todo: add auth to all controllers
-
 const createAccount = async (req, res, next) => {
-  // console.log(req.params.uid, "uid");
-  // try {
-  //   user = await User.findById(req.params.uid);
-  // } catch (err) {
-  //   const error = new HttpError(
-  //     "Fetching user failed, please try again later.",
-  //     500
-  //   );
-  //   return next(error);
-  // }
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return next(
@@ -139,21 +73,6 @@ const createAccount = async (req, res, next) => {
     userId: req.params.uid,
   });
 
-  // let user;
-  // try {
-  //   user = await User.findById(creator);
-  // } catch (err) {
-  //   const error = new HttpError("Creating account failed, please try again", 500);
-  //   return next(error);
-  // }
-
-  // if (!user) {
-  //   const error = new HttpError("Could not find user for provided id", 404);
-  //   return next(error);
-  // }
-
-  // console.log(user);
-
   try {
     await createdAccount.save();
   } catch (err) {
@@ -168,7 +87,6 @@ const createAccount = async (req, res, next) => {
 };
 
 const updateAccount = async (req, res, next) => {
-  console.log(req.body, "res");
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return next(
@@ -269,7 +187,6 @@ const deleteAccount = async (req, res, next) => {
 
 exports.getAccountById = getAccountById;
 exports.getRecordsByAccountId = getRecordsByAccountId;
-// exports.getAccountsByUserId = getAccountsByUserId;
 exports.createAccount = createAccount;
 exports.updateAccount = updateAccount;
 exports.deleteAccount = deleteAccount;

@@ -67,9 +67,7 @@ const sendEmail = async (toEmail, firstName, password, type) => {
     };
     await SES.sendEmail(params)
       .promise()
-      .then((data) => {
-        console.log("Email sent successfully", data.MessageId);
-      })
+      .then((data) => {})
       .catch((err) => {
         const error = new HttpError("Error in sending Email", 500);
         console.log("error", err);

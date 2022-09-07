@@ -91,12 +91,9 @@ const createBulkRecord = async (req, res, next) => {
 };
 
 const deleteBulkRecord = async (req, res, next) => {
-  // remove bulk record
   const bulkRecordId = req.params.rid;
   let bulkRecord;
   let accountId = "";
-
-  // console.log(bulkRecordId);
 
   try {
     bulkRecord = await BulkRecord.findById({ _id: bulkRecordId });
@@ -115,23 +112,14 @@ const deleteBulkRecord = async (req, res, next) => {
   }
 
   try {
-    // const sess = await mongoose.startSession();
-    // sess.startTransaction();
-    console.log(bulkRecord, "bulkRecord");
     await bulkRecord.remove();
-    // await record.remove({ session: sess });
-    // record.creator.records.pull(record);
-    // await record.creator.save({ session: sess });
-    // await sess.commitTransaction();
   } catch (err) {
     const error = new HttpError(
       "Something went wrong, could not delete record.",
       500
     );
-    return next(error); // rollback on error
+    return next(error);
   }
-
-  // remove records
 
   let records;
 
@@ -140,9 +128,9 @@ const deleteBulkRecord = async (req, res, next) => {
     return acc + record.amount;
   }, 0);
 
+  // remove records
   try {
     records = await Record.deleteMany({ bulkRecordId });
-    console.log(records, "records");
   } catch (err) {
     const error = new HttpError(
       "Something went wrong, could not delete record.",
@@ -178,11 +166,6 @@ const deleteBulkRecord = async (req, res, next) => {
   res.status(200).json({ message: "Deleted Record." });
 };
 
-// exports.getRecordById = getRecordById;
-// exports.getRecordsByAccountId = getRecordsByAccountId;
-// exports.createRecord = createRecord;
 exports.createBulkRecord = createBulkRecord;
 exports.getBulkRecordsByAccountId = getBulkRecordsByAccountId;
 exports.deleteBulkRecord = deleteBulkRecord;
-// exports.updateRecord = updateRecord;
-// exports.deleteRecord = deleteRecord;

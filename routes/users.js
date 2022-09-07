@@ -51,5 +51,3 @@ router.post(
 );
 
 module.exports = router;
-
-// TODO from tuto 180, add comments to f()

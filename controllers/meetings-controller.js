@@ -1,13 +1,8 @@
 const { validationResult } = require("express-validator");
-const mongoose = require("mongoose");
-
 const HttpError = require("../models/http-error");
 const Meeting = require("../models/meeting");
-const Record = require("../models/record");
-const User = require("../models/user");
 
 const createMeeting = async (req, res, next) => {
-  console.log(req.body);
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return next(
@@ -27,14 +22,7 @@ const createMeeting = async (req, res, next) => {
   });
 
   try {
-    // console.log(recordType, accountId, amount, category, subCategory, date);
-    // const sess = await mongoose.startSession();
-    // sess.startTransaction();
-    // await createdRecord.save({ session: sess });
     await createdMeeting.save();
-    // user.records.push(createdRecord);
-    // await user.save({ session: sess });
-    // await sess.commitTransaction();
   } catch (err) {
     const error = new HttpError(
       "Creating meeting failed, please try again.",
@@ -42,13 +30,10 @@ const createMeeting = async (req, res, next) => {
     );
     return next(error);
   }
-
-  // res.status(201).json({ record: createdRecord });
   res.status(201).json({ msg: "Successful" });
 };
 
 const updateMeeting = async (req, res, next) => {
-  console.log(req.body);
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return next(
@@ -57,9 +42,7 @@ const updateMeeting = async (req, res, next) => {
   }
 
   const { advisorId, userId, userName, isDisabled, date, time } = req.body;
-
   const meetingId = req.params.mid;
-
   let meeting;
 
   try {
@@ -124,8 +107,6 @@ const deleteMeeting = async (req, res, next) => {
   res.status(200).json({ message: "Successfully Deleted Meeting." });
 };
 
-// exports.getRecordById = getRecordById;
-// exports.getRecordsByAccountId = getRecordsByAccountId;
 exports.createMeeting = createMeeting;
 exports.updateMeeting = updateMeeting;
 exports.deleteMeeting = deleteMeeting;
